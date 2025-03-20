@@ -1,7 +1,8 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { TypeOrmModule } from '@nestjs/typeorm';
 import * as Joi from 'joi';
 
 @Module({
@@ -16,6 +17,20 @@ import * as Joi from 'joi';
         DB_PASS: Joi.string().required(),
         DB_NAME: Joi.string().required(),
         DB_SYNC: Joi.boolean().truthy('true').falsy('false').default(false),
+      }),
+    }),
+    TypeOrmModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        type: 'mysql',
+        host: configService.get<string>('DB_HOST'),
+        port: configService.get<number>('DB_PORT'),
+        username: configService.get<string>('DB_USER'),
+        password: configService.get<string>('DB_PASS'),
+        database: configService.get<string>('DB_NAME'),
+        entities: [],
+        synchronize: configService.get<boolean>('DB_SYNC', false),
       }),
     }),
   ],
