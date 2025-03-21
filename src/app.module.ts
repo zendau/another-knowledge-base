@@ -5,6 +5,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ArticlesModule } from './articles/articles.module';
 import { AuthModule } from './auth/auth.module';
+import { UserModule } from './user/user.module';
 import * as Joi from 'joi';
 
 @Module({
@@ -38,6 +39,7 @@ import * as Joi from 'joi';
     }),
     ArticlesModule,
     AuthModule,
+    UserModule,
   ],
   controllers: [AppController],
   providers: [AppService],
