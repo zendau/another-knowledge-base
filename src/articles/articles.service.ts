@@ -5,6 +5,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Article } from './entities/article.entity';
 import { Tag } from './entities/tag.entity';
 import { Repository, In } from 'typeorm';
+import { UsersService } from '@/user/user.service';
 
 @Injectable()
 export class ArticlesService {
@@ -14,11 +15,22 @@ export class ArticlesService {
 
     @InjectRepository(Tag)
     private readonly tagRepository: Repository<Tag>,
+
+    private readonly userService: UsersService,
   ) {}
 
-  async create(createArticleDto: CreateArticleDto): Promise<Article> {
+  async create(
+    createArticleDto: CreateArticleDto,
+    authorId: number,
+  ): Promise<Article> {
     const { title, content, isPublic, tags } = createArticleDto;
     const articleTagsEntities: Tag[] = [];
+
+    const user = await this.userService.findById(authorId);
+
+    if (!user) {
+      throw new Error('User not found'); // Или использовать HttpException
+    }
 
     if (tags) {
       const tagEntities = await this.tagRepository.find({
@@ -43,6 +55,7 @@ export class ArticlesService {
       content,
       isPublic,
       tags: articleTagsEntities,
+      author: user,
     });
 
     return this.articleRepository.save(article);
@@ -52,7 +65,7 @@ export class ArticlesService {
     return this.articleRepository.find({
       take: limit,
       skip: (page - 1) * limit,
-      relations: ['tags'], // Добавляем связи, чтобы подтянуть теги
+      relations: ['tags'],
     });
   }
 

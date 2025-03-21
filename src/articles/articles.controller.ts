@@ -8,6 +8,7 @@ import {
   Delete,
   Query,
   UseGuards,
+  Request,
 } from '@nestjs/common';
 import { ArticlesService } from './articles.service';
 import { CreateArticleDto } from './dto/create-article.dto';
@@ -21,8 +22,8 @@ export class ArticlesController {
 
   @UseGuards(JwtAuthGuard)
   @Post()
-  create(@Body() createArticleDto: CreateArticleDto) {
-    return this.articlesService.create(createArticleDto);
+  create(@Request() req, @Body() createArticleDto: CreateArticleDto) {
+    return this.articlesService.create(createArticleDto, req.user.sub);
   }
 
   @Get()

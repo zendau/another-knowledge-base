@@ -7,9 +7,11 @@ import {
   UpdateDateColumn,
   ManyToMany,
   JoinTable,
+  ManyToOne,
 } from 'typeorm';
 // import { User } from './user.entity';
 import { Tag } from './tag.entity';
+import { User } from '@/user/entiries/user.entity';
 
 @Entity('articles')
 export class Article {
@@ -25,8 +27,8 @@ export class Article {
   @Column({ default: true })
   isPublic: boolean;
 
-  // @ManyToOne(() => User, (user) => user.articles, { onDelete: 'CASCADE' })
-  // author: User;
+  @ManyToOne(() => User, (user) => user.articles, { onDelete: 'CASCADE' })
+  author: User;
 
   @ManyToMany(() => Tag, (tag) => tag.articles, { cascade: true })
   @JoinTable({ name: 'article_tags' })
