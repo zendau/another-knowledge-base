@@ -1,4 +1,4 @@
-import { IsInt, Min, IsOptional } from 'class-validator';
+import { IsInt, Min, IsOptional, IsString } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class PaginationDto {
@@ -13,4 +13,8 @@ export class PaginationDto {
   @IsInt()
   @Min(1)
   limit?: number = 10; // Значение по умолчанию
+
+  @IsOptional()
+  @IsString({ each: true }) // Проверка, что каждый элемент массива - строка
+  tags?: string[];
 }

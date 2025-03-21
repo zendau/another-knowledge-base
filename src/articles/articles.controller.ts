@@ -9,6 +9,7 @@ import {
   Query,
   UseGuards,
   Request,
+  ParseArrayPipe,
 } from '@nestjs/common';
 import { ArticlesService } from './articles.service';
 import { CreateArticleDto } from './dto/create-article.dto';
@@ -27,22 +28,39 @@ export class ArticlesController {
     return this.articlesService.create(createArticleDto, req.user.sub);
   }
 
+  // @UseGuards(OptionalAuthGuard)
+  // @Get('tags')
+  // findByTags(@Request() req, @Query('tags') tags: string[]) {
+  //   const isAuth = Boolean(req.user);
+
+  //   console.log(tags);
+
+  //   return this.articlesService.findByTags(tags, isAuth);
+  // }
+
   @UseGuards(OptionalAuthGuard)
   @Get()
-  findAll(@Request() req, @Query() paginationDto: PaginationDto) {
+  findAll(
+    @Request() req,
+    @Query() { page, limit }: PaginationDto,
+    @Query('tags', new ParseArrayPipe({ items: String, optional: true }))
+    tags?: string[],
+  ) {
     const isAuth = Boolean(req.user);
 
-    return this.articlesService.findAll(
+    return this.articlesService.findList({
       isAuth,
-      paginationDto.page,
-      paginationDto.limit,
-    );
+      pagination: { page, limit },
+      filter: { tags },
+    });
   }
 
   @UseGuards(OptionalAuthGuard)
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.articlesService.findOne(+id);
+  findOne(@Request() req, @Param('id') id: string) {
+    const isAuth = Boolean(req.user);
+
+    return this.articlesService.findOne(+id, isAuth);
   }
 
   @UseGuards(JwtAuthGuard)

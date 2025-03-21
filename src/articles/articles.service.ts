@@ -6,6 +6,7 @@ import { Article } from './entities/article.entity';
 import { Tag } from './entities/tag.entity';
 import { Repository, In } from 'typeorm';
 import { UsersService } from '@/user/user.service';
+import IFindList from './interfaces/IFindList';
 
 @Injectable()
 export class ArticlesService {
@@ -77,28 +78,42 @@ export class ArticlesService {
       .leftJoinAndSelect('article.tags', 'tags');
   }
 
-  async findAll(
-    isAuth: boolean,
-    page: number = 1,
-    limit: number = 10,
-  ): Promise<Article[]> {
+  async findList({ isAuth, pagination: { page, limit }, filter }: IFindList) {
     const query = this.queryBuilder().orderBy('article.createdAt');
 
+    if (filter.tags) {
+      query.andWhere('tags.name IN (:...tags)', {
+        tags: filter.tags,
+      });
+    }
+
     if (!isAuth) {
-      query.where('article.isPublic = :isPublic', { isPublic: true });
+      query.andWhere('article.isPublic = :isPublic', { isPublic: true });
     }
 
     query.take(limit).skip((page - 1) * limit);
 
-    return query.getMany();
+    const list = await query.getMany();
+    const hasNextPage = limit - list.length === 0;
+
+    return {
+      data: list,
+      meta: {
+        page,
+        limit,
+        hasNextPage,
+      },
+    };
   }
 
-  async findOne(id: number): Promise<Article> {
-    const article = await this.articleRepository.findOne({
-      where: { id },
-      relations: ['tags'],
-    });
+  async findOne(id: number, isAuth: boolean): Promise<Article> {
+    const query = this.queryBuilder().where('article.id = :id', { id });
 
+    if (!isAuth) {
+      query.andWhere('article.isPublic = :isPublic', { isPublic: true });
+    }
+
+    const article = await query.getOne();
     if (!article) {
       throw new NotFoundException(`Статья с ID ${id} не найдена`);
     }
@@ -106,11 +121,23 @@ export class ArticlesService {
     return article;
   }
 
+  // async findByTags(tags: string[], isAuth: boolean): Promise<Article[]> {
+  //   const query = this.queryBuilder().where('tags.name IN (:...tags)', {
+  //     tags,
+  //   });
+
+  //   if (!isAuth) {
+  //     query.andWhere('article.isPublic = :isPublic', { isPublic: true });
+  //   }
+
+  //   return query.getMany();
+  // }
+
   async update(
     id: number,
     updateArticleDto: UpdateArticleDto,
   ): Promise<Article> {
-    const article = await this.findOne(id);
+    const article = await this.findOne(id, true);
     Object.assign(article, updateArticleDto);
 
     if (updateArticleDto.tags) {
@@ -135,15 +162,7 @@ export class ArticlesService {
   }
 
   async remove(id: number): Promise<void> {
-    const article = await this.findOne(id);
+    const article = await this.findOne(id, true);
     await this.articleRepository.remove(article);
-  }
-
-  async findByTags(tags: string[]): Promise<Article[]> {
-    return this.articleRepository
-      .createQueryBuilder('article')
-      .leftJoinAndSelect('article.tags', 'tag')
-      .where('tag.name IN (:...tags)', { tags })
-      .getMany();
   }
 }
