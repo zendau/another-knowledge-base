@@ -31,6 +31,7 @@ import * as Joi from 'joi';
         password: configService.get<string>('DB_PASS'),
         database: configService.get<string>('DB_NAME'),
         entities: [],
+        autoLoadEntities: true,
         synchronize: configService.get<boolean>('DB_SYNC', false),
       }),
     }),
