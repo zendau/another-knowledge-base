@@ -29,7 +29,7 @@ export class ArticlesService {
     const user = await this.userService.findById(authorId);
 
     if (!user) {
-      throw new Error('User not found'); // Или использовать HttpException
+      throw new NotFoundException('User not found');
     }
 
     if (tags) {
@@ -61,12 +61,36 @@ export class ArticlesService {
     return this.articleRepository.save(article);
   }
 
-  async findAll(page: number = 1, limit: number = 10): Promise<Article[]> {
-    return this.articleRepository.find({
-      take: limit,
-      skip: (page - 1) * limit,
-      relations: ['tags'],
-    });
+  queryBuilder() {
+    return this.articleRepository
+      .createQueryBuilder('article')
+      .select([
+        'article.id',
+        'article.title',
+        'article.content',
+        'article.isPublic',
+        'article.createdAt',
+        'article.updatedAt',
+      ])
+      .innerJoin('article.author', 'author')
+      .addSelect(['author.id', 'author.email'])
+      .leftJoinAndSelect('article.tags', 'tags');
+  }
+
+  async findAll(
+    isAuth: boolean,
+    page: number = 1,
+    limit: number = 10,
+  ): Promise<Article[]> {
+    const query = this.queryBuilder().orderBy('article.createdAt');
+
+    if (!isAuth) {
+      query.where('article.isPublic = :isPublic', { isPublic: true });
+    }
+
+    query.take(limit).skip((page - 1) * limit);
+
+    return query.getMany();
   }
 
   async findOne(id: number): Promise<Article> {
