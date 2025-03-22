@@ -29,9 +29,7 @@ export class ArticlesService {
 
     const user = await this.userService.findById(authorId);
 
-    if (!user) {
-      throw new NotFoundException('User not found');
-    }
+    if (!user) throw new NotFoundException('Author not found');
 
     if (tags) {
       const tagEntities = await this.tagRepository.find({
@@ -60,22 +58,6 @@ export class ArticlesService {
     });
 
     return this.articleRepository.save(article);
-  }
-
-  queryBuilder() {
-    return this.articleRepository
-      .createQueryBuilder('article')
-      .select([
-        'article.id',
-        'article.title',
-        'article.content',
-        'article.isPublic',
-        'article.createdAt',
-        'article.updatedAt',
-      ])
-      .innerJoin('article.author', 'author')
-      .addSelect(['author.id', 'author.email'])
-      .leftJoinAndSelect('article.tags', 'tags');
   }
 
   async findList({ isAuth, pagination: { page, limit }, filter }: IFindList) {
@@ -121,18 +103,6 @@ export class ArticlesService {
     return article;
   }
 
-  // async findByTags(tags: string[], isAuth: boolean): Promise<Article[]> {
-  //   const query = this.queryBuilder().where('tags.name IN (:...tags)', {
-  //     tags,
-  //   });
-
-  //   if (!isAuth) {
-  //     query.andWhere('article.isPublic = :isPublic', { isPublic: true });
-  //   }
-
-  //   return query.getMany();
-  // }
-
   async update(
     id: number,
     updateArticleDto: UpdateArticleDto,
@@ -164,5 +134,21 @@ export class ArticlesService {
   async remove(id: number): Promise<void> {
     const article = await this.findOne(id, true);
     await this.articleRepository.remove(article);
+  }
+
+  queryBuilder() {
+    return this.articleRepository
+      .createQueryBuilder('article')
+      .select([
+        'article.id',
+        'article.title',
+        'article.content',
+        'article.isPublic',
+        'article.createdAt',
+        'article.updatedAt',
+      ])
+      .innerJoin('article.author', 'author')
+      .addSelect(['author.id', 'author.email'])
+      .leftJoinAndSelect('article.tags', 'tags');
   }
 }

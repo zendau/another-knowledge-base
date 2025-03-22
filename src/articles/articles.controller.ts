@@ -40,7 +40,7 @@ export class ArticlesController {
 
   @UseGuards(OptionalAuthGuard)
   @Get()
-  findAll(
+  findList(
     @Request() req,
     @Query() { page, limit }: PaginationDto,
     @Query('tags', new ParseArrayPipe({ items: String, optional: true }))
