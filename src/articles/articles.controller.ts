@@ -15,8 +15,8 @@ import { ArticlesService } from './articles.service';
 import { CreateArticleDto } from './dto/create-article.dto';
 import { UpdateArticleDto } from './dto/update-article.dto';
 import { PaginationDto } from './dto/pagitaion.dto';
-import { JwtAuthGuard } from '@/auth/jwt-auth.guard';
-import { OptionalAuthGuard } from '@/auth/optional-auth.guard';
+import { JwtAuthGuard } from '@/auth/guards/jwt-auth.guard';
+import { OptionalAuthGuard } from '@/auth/guards/optional-auth.guard';
 
 @Controller('articles')
 export class ArticlesController {
@@ -25,7 +25,7 @@ export class ArticlesController {
   @UseGuards(JwtAuthGuard)
   @Post()
   create(@Request() req, @Body() createArticleDto: CreateArticleDto) {
-    return this.articlesService.create(createArticleDto, req.user.sub);
+    return this.articlesService.create(createArticleDto, req.user.id);
   }
 
   // @UseGuards(OptionalAuthGuard)

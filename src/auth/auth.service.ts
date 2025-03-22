@@ -18,7 +18,6 @@ export class AuthService {
     private readonly configService: ConfigService,
   ) {}
 
-  // Регистрация нового пользователя
   async register(
     createUserDto: CreateUserDto,
   ): Promise<{ accessToken: string }> {
@@ -30,22 +29,19 @@ export class AuthService {
     }
 
     const saltRounds = this.configService.get<number>('SALT_ROUNDS') || 10;
-    // Хешируем пароль
+
     const hashedPassword = await bcrypt.hash(password, saltRounds);
 
-    // Создаем пользователя с хешированным паролем
     const user = await this.usersService.create({
       email,
       password: hashedPassword,
     });
 
-    // Генерация JWT токена
     const accessToken = await this.generateAccessToken(user);
 
     return { accessToken };
   }
 
-  // Вход пользователя (аутентификация)
   async login(
     email: string,
     password: string,
@@ -60,15 +56,13 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    // Генерация JWT токена
     const accessToken = await this.generateAccessToken(user);
 
     return { accessToken };
   }
 
-  // Генерация токена
   private async generateAccessToken(user: User): Promise<string> {
-    const payload = { email: user.email, sub: user.id };
+    const payload = { email: user.email, id: user.id, role: user.role };
     return this.jwtService.sign(payload);
   }
 }
