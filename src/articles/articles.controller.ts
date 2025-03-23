@@ -29,16 +29,6 @@ export class ArticlesController {
     return this.articlesService.create(createArticleDto, req.user.id);
   }
 
-  // @UseGuards(OptionalAuthGuard)
-  // @Get('tags')
-  // findByTags(@Request() req, @Query('tags') tags: string[]) {
-  //   const isAuth = Boolean(req.user);
-
-  //   console.log(tags);
-
-  //   return this.articlesService.findByTags(tags, isAuth);
-  // }
-
   @UseGuards(OptionalAuthGuard)
   @Get()
   findList(
@@ -58,10 +48,10 @@ export class ArticlesController {
 
   @UseGuards(OptionalAuthGuard)
   @Get(':id')
-  findOne(@Request() req, @Param('id') id: string) {
+  findOne(@Request() req, @Param('id', ParseIntPipe) id: number) {
     const isAuth = Boolean(req.user);
 
-    return this.articlesService.findOne(+id, isAuth);
+    return this.articlesService.findOne(id, isAuth);
   }
 
   @UseGuards(JwtAuthGuard)

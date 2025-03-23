@@ -2,14 +2,12 @@ import {
   Entity,
   PrimaryGeneratedColumn,
   Column,
-  // ManyToOne,
   CreateDateColumn,
   UpdateDateColumn,
   ManyToMany,
   JoinTable,
   ManyToOne,
 } from 'typeorm';
-// import { User } from './user.entity';
 import { Tag } from './tag.entity';
 import { User } from '@/user/entiries/user.entity';
 

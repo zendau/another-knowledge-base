@@ -3,18 +3,18 @@ import { Type } from 'class-transformer';
 
 export class PaginationDto {
   @IsOptional()
-  @Type(() => Number) // Преобразует строку в число
+  @Type(() => Number)
   @IsInt()
-  @Min(1) // Минимальное значение — 1
-  page?: number = 1; // Значение по умолчанию
+  @Min(1)
+  page?: number = 1;
 
   @IsOptional()
   @Type(() => Number)
   @IsInt()
   @Min(1)
-  limit?: number = 10; // Значение по умолчанию
+  limit?: number = 10;
 
   @IsOptional()
-  @IsString({ each: true }) // Проверка, что каждый элемент массива - строка
+  @IsString({ each: true })
   tags?: string[];
 }

@@ -69,10 +69,14 @@ describe('ArticlesService', () => {
     tagRepo = module.get(getRepositoryToken(Tag));
     userService = module.get(UsersService);
 
-    jest.clearAllMocks();
-
     qb = createQueryBuilderMock();
-    (articleRepo.createQueryBuilder as jest.Mock).mockReturnValue(qb);
+
+    jest.spyOn(articleRepo, 'createQueryBuilder').mockReturnValue(qb);
+  });
+
+  afterEach(() => {
+    jest.clearAllMocks();
+    jest.restoreAllMocks();
   });
 
   describe('create', () => {

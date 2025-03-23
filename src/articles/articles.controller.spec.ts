@@ -15,21 +15,16 @@ describe('ArticlesController', () => {
       providers: [
         ArticlesService,
         {
-          // Мок для ArticleRepository
           provide: getRepositoryToken(Article),
-          useValue: {}, // Здесь можно задать stub-реализацию методов репозитория
+          useValue: {},
         },
         {
-          // Мок для TagRepository
           provide: getRepositoryToken(Tag),
           useValue: {},
         },
         {
-          // Мок для UsersService, если ArticlesService его использует
           provide: UsersService,
-          useValue: {
-            // Можно добавить stub-методы, если необходимо
-          },
+          useValue: {},
         },
       ],
     }).compile();

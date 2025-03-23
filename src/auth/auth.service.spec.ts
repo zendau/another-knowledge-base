@@ -26,7 +26,7 @@ describe('AuthService', () => {
     };
 
     const mockConfigService = {
-      get: jest.fn().mockReturnValue(10), // SALT_ROUNDS = 10
+      get: jest.fn().mockReturnValue(10),
     };
 
     module = await Test.createTestingModule({
@@ -102,7 +102,7 @@ describe('AuthService', () => {
         password: '123456',
       });
 
-      expect(bcrypt.hash).toHaveBeenCalledWith('123456', 10); // 10 — дефолтное значение
+      expect(bcrypt.hash).toHaveBeenCalledWith('123456', 10);
     });
   });
 
