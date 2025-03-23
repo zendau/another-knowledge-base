@@ -10,6 +10,7 @@ import {
   UseGuards,
   Request,
   ParseArrayPipe,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { ArticlesService } from './articles.service';
 import { CreateArticleDto } from './dto/create-article.dto';
@@ -65,13 +66,21 @@ export class ArticlesController {
 
   @UseGuards(JwtAuthGuard)
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateArticleDto: UpdateArticleDto) {
-    return this.articlesService.update(+id, updateArticleDto);
+  update(
+    @Request() req,
+    @Param('id', ParseIntPipe) articleId: number,
+    @Body() updateArticleDto: UpdateArticleDto,
+  ) {
+    const userId = req.user?.id;
+
+    return this.articlesService.update(articleId, userId, updateArticleDto);
   }
 
   @UseGuards(JwtAuthGuard)
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.articlesService.remove(+id);
+  remove(@Request() req, @Param('id', ParseIntPipe) articleId: number) {
+    const userId = req.user?.id;
+
+    return this.articlesService.remove(articleId, userId);
   }
 }
