@@ -12,6 +12,8 @@ describe('AuthService', () => {
   let usersService: jest.Mocked<UsersService>;
   let jwtService: jest.Mocked<JwtService>;
   let configService: jest.Mocked<ConfigService>;
+  let module: TestingModule;
+  let mockUser: User;
 
   beforeEach(async () => {
     const mockUsersService = {
@@ -27,7 +29,7 @@ describe('AuthService', () => {
       get: jest.fn().mockReturnValue(10), // SALT_ROUNDS = 10
     };
 
-    const module: TestingModule = await Test.createTestingModule({
+    module = await Test.createTestingModule({
       providers: [
         AuthService,
         { provide: UsersService, useValue: mockUsersService },
@@ -38,18 +40,31 @@ describe('AuthService', () => {
 
     authService = module.get<AuthService>(AuthService);
     usersService = module.get(UsersService);
+    jwtService = module.get(JwtService);
+    configService = module.get(ConfigService);
+
+    mockUser = {
+      id: 1,
+      email: 'test@example.com',
+      password: 'hashedPassword',
+    } as User;
+
+    jest.spyOn(bcrypt, 'hash').mockResolvedValue('hashedPassword');
+    jest.spyOn(bcrypt, 'compare').mockResolvedValue(true);
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  afterAll(async () => {
+    await module.close();
   });
 
   describe('register', () => {
     it('should create a user and return access token', async () => {
-      const mockUser = {
-        id: 1,
-        email: 'test@example.com',
-        password: 'hashedPassword',
-      } as User;
-      usersService.findByEmail.mockResolvedValue(null); // Пользователь не найден
+      usersService.findByEmail.mockResolvedValue(null);
       usersService.create.mockResolvedValue(mockUser);
-      jest.spyOn(bcrypt, 'hash').mockResolvedValue('hashedPassword');
 
       const result = await authService.register({
         email: 'test@example.com',
@@ -62,27 +77,38 @@ describe('AuthService', () => {
         email: 'test@example.com',
         password: 'hashedPassword',
       });
+      expect(jwtService.sign).toHaveBeenCalledWith({
+        email: 'test@example.com',
+        id: 1,
+        role: undefined,
+      });
       expect(result).toEqual({ accessToken: 'mockedAccessToken' });
     });
 
     it('should throw BadRequestException if user already exists', async () => {
-      usersService.findByEmail.mockResolvedValue({ id: 1 } as User);
+      usersService.findByEmail.mockResolvedValue(mockUser);
 
       await expect(
         authService.register({ email: 'test@example.com', password: '123456' }),
       ).rejects.toThrow(BadRequestException);
     });
+
+    it('should use default SALT_ROUNDS if config returns null', async () => {
+      configService.get.mockReturnValue(null);
+      usersService.create.mockResolvedValue(mockUser);
+
+      await authService.register({
+        email: 'test@example.com',
+        password: '123456',
+      });
+
+      expect(bcrypt.hash).toHaveBeenCalledWith('123456', 10); // 10 — дефолтное значение
+    });
   });
 
   describe('login', () => {
     it('should return access token if credentials are valid', async () => {
-      const mockUser = {
-        id: 1,
-        email: 'test@example.com',
-        password: 'hashedPassword',
-      } as User;
       usersService.findByEmail.mockResolvedValue(mockUser);
-      jest.spyOn(bcrypt, 'compare').mockResolvedValue(true);
 
       const result = await authService.login('test@example.com', '123456');
 
@@ -100,11 +126,6 @@ describe('AuthService', () => {
     });
 
     it('should throw UnauthorizedException if password is incorrect', async () => {
-      const mockUser = {
-        id: 1,
-        email: 'test@example.com',
-        password: 'hashedPassword',
-      } as User;
       usersService.findByEmail.mockResolvedValue(mockUser);
       jest.spyOn(bcrypt, 'compare').mockResolvedValue(false);
 
