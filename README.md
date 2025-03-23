@@ -21,6 +21,9 @@
 1. Клонируйте репозиторий:
 ```bash
 git clone https://github.com/zendau/another-knowledge-base.git
+```
+
+```basy
 cd another-knowledge-base
 ```
 
