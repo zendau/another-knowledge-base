@@ -5,7 +5,7 @@ import { Repository, SelectQueryBuilder } from 'typeorm';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Article } from './entities/article.entity';
 import { Tag } from './entities/tag.entity';
-import { NotFoundException, ForbiddenException } from '@nestjs/common';
+import { NotFoundException, ForbiddenException, BadRequestException } from '@nestjs/common';
 import { User } from '@/user/entiries/user.entity';
 
 const mockArticleRepository = {
