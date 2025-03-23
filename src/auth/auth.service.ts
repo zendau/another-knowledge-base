@@ -16,7 +16,7 @@ export class AuthService {
     private readonly usersService: UsersService,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
-  ) {}
+  ) { }
 
   async register(
     createUserDto: CreateUserDto,
@@ -28,18 +28,18 @@ export class AuthService {
       throw new BadRequestException('User with this email already exists');
     }
 
-    const saltRounds = this.configService.get<number>('SALT_ROUNDS') || 10;
+    const saltRounds = this.configService.get<number>('SALT') || 10;
 
-    const hashedPassword = await bcrypt.hash(password, saltRounds);
+      const hashedPassword = await bcrypt.hash(password, saltRounds);
 
-    const user = await this.usersService.create({
-      email,
-      password: hashedPassword,
-    });
+      const user = await this.usersService.create({
+        email,
+        password: hashedPassword,
+      });
 
-    const accessToken = await this.generateAccessToken(user);
+      const accessToken = await this.generateAccessToken(user);
 
-    return { accessToken };
+      return { accessToken };
   }
 
   async login(
@@ -51,9 +51,9 @@ export class AuthService {
       throw new UnauthorizedException('User not found');
     }
 
-    const isPasswordValid = await bcrypt.compare(password, user.password);
-    if (!isPasswordValid) {
-      throw new UnauthorizedException('Invalid credentials');
+      const isPasswordValid = await bcrypt.compare(password, user.password);
+      if (!isPasswordValid) {
+        throw new UnauthorizedException('Invalid credentials');
     }
 
     const accessToken = await this.generateAccessToken(user);

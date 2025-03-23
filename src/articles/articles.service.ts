@@ -119,7 +119,7 @@ export class ArticlesService {
     const article = await this.findOne(articleId, true);
 
     if (article.author.id !== userId) {
-      throw new ForbiddenException('1');
+      throw new ForbiddenException('You do not have permission to modify this article. Only the author can make changes.');
     }
 
     Object.assign(article, updateArticleDto);
@@ -149,7 +149,7 @@ export class ArticlesService {
     const article = await this.findOne(articleId, true);
 
     if (article.author.id !== userId) {
-      throw new ForbiddenException('1');
+      throw new ForbiddenException('You do not have permission to delete this article. Only the author can delete their own articles.');
     }
 
     return this.articleRepository.remove(article);
