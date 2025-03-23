@@ -20,7 +20,7 @@
 
 1. Клонируйте репозиторий:
 ```bash
-git clone [repository-url]
+git clone https://github.com/zendau/another-knowledge-base.git
 cd another-knowledge-base
 ```
 
